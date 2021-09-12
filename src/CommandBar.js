@@ -7,13 +7,42 @@ const DEFAULT_OPTIONS = [
     name: 'Google',
     url: 'https://google.com/search',
     params: ['q'], // use to validate? "Missing Param Q"
+    label: 'Google search for {query}',
   },
   {
     name: 'DownloadVideo',
     url: 'https://materialistic-brook-king.glitch.me/dl',
     params: ['url'],
+    label: 'Download video from {query}',
   },
 ];
+
+const propHandlers = {
+  options() {
+    this.fuse?.setCollection(this.options);
+  },
+  search() {
+    const results = [];
+    const [command, ...queries] = this.search.split(' ');
+    // need to do OR for queries
+    for (const result of this.fuse.search(command)) {
+      const {
+        item: { url, params },
+      } = result;
+      const urlObject = constructedUrl(url, params, queries);
+
+      params.forEach((param, index) => {
+        if (queries[index]) {
+          urlObject.searchParams.set(param, queries[index]);
+        }
+      });
+
+      const label = result.item.label.replace('{query}', queries.join(' '));
+      results.push({ ...result.item, url: urlObject, label });
+    }
+    this.results = results;
+  },
+};
 
 export class CommandBar extends LitElement {
   static get styles() {
@@ -39,18 +68,35 @@ export class CommandBar extends LitElement {
 
         font-size: 2rem;
         width: 100%;
+
+        padding: 0.4rem;
       }
       .SubmitButton {
       }
 
       .Result {
         display: flex;
+        align-items: center;
+
+        padding: 1.2rem;
 
         font-size: 1.6rem;
         font-family: sans-serif;
+
+        text-decoration: none;
+        color: rgba(0, 0, 0, 1);
       }
-      .Result dt {
-        // flex: 1;
+
+      .Result + .Result {
+        margin-top: 1rem;
+      }
+
+      .Result__action {
+        // background: rgba(114, 114, 230, 1);
+        background: rgba(85, 185, 120, 1);
+        padding: 0.4rem 1.6rem;
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 1);
       }
       .Result__url {
         flex: 1 1 auto;
@@ -70,36 +116,9 @@ export class CommandBar extends LitElement {
     };
   }
 
-  get propHandlers() {
-    return {
-      options() {
-        this.fuse?.setCollection(this.options);
-      },
-      search() {
-        let results = [];
-        const [command, ...queries] = this.search.split(' ');
-        // need to do OR for queries
-        for (const result of this.fuse.search(command)) {
-          const {
-            item: { url, params },
-          } = result;
-          const urlObject = constructedUrl(url, params, queries);
-
-          params.forEach((param, index) => {
-            if (queries[index]) {
-              urlObject.searchParams.set(param, queries[index]);
-            }
-          });
-
-          results.push({ ...result.item, url: urlObject });
-        }
-        this.results = results;
-      },
-    };
-  }
-
   constructor() {
     super();
+    this.search = 'goog mysickquerygoeshereitssolongomg';
     this.options = [...DEFAULT_OPTIONS];
     this.fuse = new Fuse(this.options, {
       keys: ['name'],
@@ -109,7 +128,7 @@ export class CommandBar extends LitElement {
   }
 
   updated(changedProps) {
-    for (const [prop] of changedProps) this.propHandlers[prop]?.bind(this)();
+    for (const [prop] of changedProps) propHandlers[prop]?.bind(this)();
   }
 
   render() {
@@ -122,6 +141,21 @@ export class CommandBar extends LitElement {
           class="Search"
           @input=${this._updateSearch}
         />
+        <div class="Results">
+          <dl class="DescriptionList">
+            ${this.results?.map(
+              result => html`<a
+                href="${result.url}"
+                class="Result"
+                aria-label="${result.label}"
+              >
+                <dt class="Result__action">${result.name}</dt>
+                <dd class="Result__url">${result.url}</dd>
+              </a> `
+            )}
+          </dl>
+        </div>
+
         <button
           style="opacity: 0; position: absolute; pointer-events: none;"
           type="submit"
@@ -130,16 +164,6 @@ export class CommandBar extends LitElement {
           Run
         </button>
       </form>
-      <div class="Results">
-        <dl class="DescriptionList">
-          ${this.results?.map(result => {
-            return html`<a href="${result.url}" class="Result">
-              <dt>${result.name}</dt>
-              <dd class="Result__url">${result.url}</dd>
-            </a> `;
-          })}
-        </dl>
-      </div>
       <!-- </div> -->
     `;
   }
