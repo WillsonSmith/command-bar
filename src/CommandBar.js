@@ -117,7 +117,7 @@ export class CommandBar extends LitElement {
 
   constructor() {
     super();
-    this.selected = null;
+    this.selected = 0;
     this.options = [...DEFAULT_OPTIONS];
     this.fuse = new Fuse(this.options, {
       keys: ['name'],

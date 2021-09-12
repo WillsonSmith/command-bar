@@ -14,11 +14,28 @@ export default {
 function Template({ title = 'Hello world', counter = 5, textColor, slot }) {
   return html`
     <command-bar
-      style="--command-bar-text-color: ${textColor || 'black'}"
-      .title=${title}
-      .counter=${counter}
+      .options=${[
+        {
+          name: 'DuckDuckGo',
+          url: 'https://duckduckgo.com',
+          params: ['q'],
+          label: 'Search DuckDuckGo for {query}',
+        },
+        {
+          name: 'Google',
+          url: 'https://google.com/search',
+          params: ['q'], // use to validate? "Missing Param Q"
+          label: 'Google search for {query}',
+        },
+        {
+          name: 'Download Video',
+          url: 'https://materialistic-brook-king.glitch.me/dl',
+          params: ['url'],
+          label: 'Download video from {query}',
+        },
+      ]}
     >
-      ${slot}
+      some light-dom
     </command-bar>
   `;
 }
