@@ -19,7 +19,28 @@
     const title = 'Hello owc World!';
     render(
       html`
-        <command-bar .title=${title}>
+        <command-bar 
+          .title=${title} 
+          .options=${[
+            {
+              name: 'DuckDuckGo',
+              url: 'https://duckduckgo.com',
+              params: ['q'],
+              label: 'Search DuckDuckGo',
+            },
+            {
+              name: 'Google',
+              url: 'https://google.com/search',
+              params: ['q'], // use to validate? "Missing Param Q"
+              label: 'Google search for {query}',
+            },
+            {
+              name: 'Download Video',
+              url: 'https://materialistic-brook-king.glitch.me/dl',
+              params: ['url'],
+              label: 'Download video from {query}',
+            },
+          ]}>
           some light-dom
         </command-bar>
       `,

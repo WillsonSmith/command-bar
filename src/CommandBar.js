@@ -1,6 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import {} from 'idb';
-import Fuse from 'fuse.js';
+import Fuse from 'fuse.js'; // this is probably overweight tbh, could just filter by name
 
 const DEFAULT_OPTIONS = [
   {
@@ -9,18 +9,12 @@ const DEFAULT_OPTIONS = [
     params: ['q'], // use to validate? "Missing Param Q"
     label: 'Google search for {query}',
   },
-  {
-    name: 'DownloadVideo',
-    url: 'https://materialistic-brook-king.glitch.me/dl',
-    params: ['url'],
-    label: 'Download video from {query}',
-  },
 ];
 
-function constructedUrl(url, params, args) {
+function constructedUrl(url, params, queries) {
   const urlObject = new URL(`${url}`);
   params.forEach((param, index) => {
-    if (args[index]) urlObject.searchParams.set(param, args[index]);
+    if (queries[index]) urlObject.searchParams.set(param, queries[index]);
   });
   return urlObject;
 }
@@ -55,6 +49,12 @@ export class CommandBar extends LitElement {
         padding: 0.4rem;
       }
 
+      .Search:focus,
+      .Search:focus-visible {
+        outline: none;
+        box-shadow: inset 0 -2px 0 rgba(85, 185, 120, 1);
+      }
+
       .DescriptionList {
         margin: 0;
       }
@@ -82,7 +82,8 @@ export class CommandBar extends LitElement {
       }
 
       .Result[data-focused='true'] {
-        border: 1px solid red;
+        border: 1px solid rgba(85, 155, 110, 1);
+        border-radius: 1rem;
       }
 
       .Result__action {
@@ -137,8 +138,13 @@ export class CommandBar extends LitElement {
 
     // need to removeEventListener on unmount
     this.addEventListener('keydown', event => {
+      if (event.key === ' ') {
+        // don't do this if the search bar is focused
+        // event.preventDefault();
+        // this._executeCommand();
+      }
       if (event.key === 'ArrowDown') {
-        if (this.selected === null) this.selected = 0;
+        if (this.selected === null) this.selected = -1;
         event.preventDefault();
         if (this.selected < this.results.length - 1) {
           this.selected += 1;
@@ -177,6 +183,7 @@ export class CommandBar extends LitElement {
                   data-focused=${index === this.selected}
                   class="Result"
                   aria-label="${result.label}"
+                  @focus=${() => (this.selected = index)}
                 >
                   <dt class="Result__action">${result.name}</dt>
                   <dd class="Result__url">${result.url}</dd>
@@ -207,9 +214,10 @@ export class CommandBar extends LitElement {
       } = result;
       const urlObject = constructedUrl(url, params, queries);
 
+      // get queries length, get params length, if queries > params, concat
       params.forEach((param, index) => {
         if (queries[index]) {
-          urlObject.searchParams.set(param, queries[index]);
+          // urlObject.searchParams.set(param, queries[index]);
         }
       });
 
