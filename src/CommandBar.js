@@ -17,32 +17,13 @@ const DEFAULT_OPTIONS = [
   },
 ];
 
-const propHandlers = {
-  options() {
-    this.fuse?.setCollection(this.options);
-  },
-  search() {
-    const results = [];
-    const [command, ...queries] = this.search.split(' ');
-    // need to do OR for queries
-    for (const result of this.fuse.search(command)) {
-      const {
-        item: { url, params },
-      } = result;
-      const urlObject = constructedUrl(url, params, queries);
-
-      params.forEach((param, index) => {
-        if (queries[index]) {
-          urlObject.searchParams.set(param, queries[index]);
-        }
-      });
-
-      const label = result.item.label.replace('{query}', queries.join(' '));
-      results.push({ ...result.item, url: urlObject, label });
-    }
-    this.results = results;
-  },
-};
+function constructedUrl(url, params, args) {
+  const urlObject = new URL(`${url}`);
+  params.forEach((param, index) => {
+    if (args[index]) urlObject.searchParams.set(param, args[index]);
+  });
+  return urlObject;
+}
 
 export class CommandBar extends LitElement {
   static get styles() {
@@ -54,26 +35,41 @@ export class CommandBar extends LitElement {
         display: block;
         color: var(--command-bar-text-color, #000);
       }
+
       .Form {
+        background: rgba(85, 185, 120, 1);
+        padding: 1rem;
+        border-radius: 1.6rem;
       }
       .Search {
         background: var(
           --command-bar-search-background,
           var(--theme-default-face)
         );
-        border: 2px solid
-          var(--command-bar-border-color, var(--theme-default-border));
+        border: none;
+        border-bottom: 2px solid rgba(85, 155, 110, 1);
+        box-shadow: inset 1rem 0 -1rem 0 var(--command-bar-search-border, #000);
 
-        border-radius: 3px;
+        // border-radius: 1.6rem 1.6rem 0 0;
 
         font-size: 2rem;
         width: 100%;
 
         padding: 0.4rem;
       }
-      .SubmitButton {
+
+      .DescriptionList {
+        margin: 0;
       }
 
+      .Wrapper {
+        border-radius: 1.6rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 1);
+      }
+
+      .Results {
+      }
       .Result {
         display: flex;
         align-items: center;
@@ -118,7 +114,6 @@ export class CommandBar extends LitElement {
 
   constructor() {
     super();
-    this.search = 'goog mysickquerygoeshereitssolongomg';
     this.options = [...DEFAULT_OPTIONS];
     this.fuse = new Fuse(this.options, {
       keys: ['name'],
@@ -128,32 +123,35 @@ export class CommandBar extends LitElement {
   }
 
   updated(changedProps) {
-    for (const [prop] of changedProps) propHandlers[prop]?.bind(this)();
+    for (const [prop] of changedProps) this[`_${prop}Changed`]?.bind(this)();
   }
 
   render() {
     return html`
       <!-- <div class="CommandBar"> -->
       <form class="Form" @submit=${this._handleSubmit}>
-        <input
-          type="search"
-          name="command_bar_search"
-          class="Search"
-          @input=${this._updateSearch}
-        />
-        <div class="Results">
-          <dl class="DescriptionList">
-            ${this.results?.map(
-              result => html`<a
-                href="${result.url}"
-                class="Result"
-                aria-label="${result.label}"
-              >
-                <dt class="Result__action">${result.name}</dt>
-                <dd class="Result__url">${result.url}</dd>
-              </a> `
-            )}
-          </dl>
+        <div class="Wrapper">
+          <input
+            type="search"
+            name="command_bar_search"
+            class="Search"
+            placeholder="Search actions..."
+            @input=${this._updateSearch}
+          />
+          <div class="Results">
+            <dl class="DescriptionList">
+              ${this.results?.map(
+                result => html`<a
+                  href="${result.url.toString()}"
+                  class="Result"
+                  aria-label="${result.label}"
+                >
+                  <dt class="Result__action">${result.name}</dt>
+                  <dd class="Result__url">${result.url}</dd>
+                </a> `
+              )}
+            </dl>
+          </div>
         </div>
 
         <button
@@ -168,6 +166,32 @@ export class CommandBar extends LitElement {
     `;
   }
 
+  _searchChanged() {
+    const results = [];
+    const [command, ...queries] = this.search.split(' ');
+    // need to do OR for queries
+    for (const result of this.fuse.search(command)) {
+      const {
+        item: { url, params },
+      } = result;
+      const urlObject = constructedUrl(url, params, queries);
+
+      params.forEach((param, index) => {
+        if (queries[index]) {
+          urlObject.searchParams.set(param, queries[index]);
+        }
+      });
+
+      const label = result.item.label.replace('{query}', queries.join(' '));
+      results.push({ ...result.item, url: urlObject, label });
+    }
+    this.results = results;
+  }
+
+  _optionsChanged() {
+    this.fuse.setCollection(this.options);
+  }
+
   _updateSearch(event) {
     // debounce
     this.search = event.target.value;
@@ -180,20 +204,7 @@ export class CommandBar extends LitElement {
 
   _executeCommand() {
     // this should also execute custom, can open window OR..
-    window.open(this.results[0].url);
-    console.log(this.results[0].url);
-    // this.onExecute();
+    const url = this.results[0]?.url;
+    if (url) window.open(url);
   }
-
-  onExecute() {}
-
-  saveItem({ name, data }) {}
-}
-
-function constructedUrl(url, params, args) {
-  const urlObject = new URL(`${url}`);
-  params.forEach((param, index) => {
-    if (args[index]) urlObject.searchParams.set(param, args[index]);
-  });
-  return urlObject;
 }
