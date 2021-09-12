@@ -5,8 +5,13 @@ import Fuse from 'fuse.js';
 const DEFAULT_OPTIONS = [
   {
     name: 'Google',
-    url: 'google.com/search',
+    url: 'https://google.com/search',
     params: ['q'], // use to validate? "Missing Param Q"
+  },
+  {
+    name: 'DownloadVideo',
+    url: 'https://materialistic-brook-king.glitch.me/dl',
+    params: ['url'],
   },
 ];
 
@@ -39,7 +44,18 @@ export class CommandBar extends LitElement {
         this.fuse?.setCollection(this.options);
       },
       search() {
-        this.results = this.fuse.search(this.search).map(result => result.item);
+        this.results = this.fuse.search(this.search).map(result => {
+          const {
+            item: { url, params },
+          } = result;
+          const [, ...args] = this.search.split(' ');
+          const urlObject = new URL(`${url}`);
+          params.forEach((param, index) => {
+            if (args[index]) urlObject.searchParams.set(param, args[index]);
+          });
+
+          return { ...result.item, url: urlObject };
+        });
       },
     };
   }
@@ -47,7 +63,7 @@ export class CommandBar extends LitElement {
   constructor() {
     super();
     this.options = [...DEFAULT_OPTIONS];
-    this.fuse = new Fuse(this.options, { keys: ['name', 'url'] });
+    this.fuse = new Fuse(this.options, { keys: ['name'] });
   }
 
   updated(changedProps) {
@@ -69,8 +85,7 @@ export class CommandBar extends LitElement {
       <div>${this.search}</div>
       <ul>
         ${this.results?.map(result => {
-          console.log(result);
-          return html`<li>${result.name}</li>`;
+          return html`<li><a href="${result.url}">${result.name}</a></li>`;
         })}
       </ul>
       <!-- </div> -->
