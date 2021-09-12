@@ -160,7 +160,6 @@ export class CommandBar extends LitElement {
 
   render() {
     return html`
-      <!-- <div class="CommandBar"> -->
       <form class="Form" @submit=${this._handleSubmit}>
         <div class="Wrapper">
           <input
@@ -195,7 +194,6 @@ export class CommandBar extends LitElement {
           Run
         </button>
       </form>
-      <!-- </div> -->
     `;
   }
 
