@@ -39,18 +39,19 @@ export class CommandBar extends LitElement {
     super();
     this.options = [...DEFAULT_OPTIONS];
 
-    this.fuse = new Fuse(this.options, {});
+    // this.fuse = new Fuse(this.options, {});
 
     this._updateSearch = this._updateSearch.bind(this);
     this._handleSubmit = this._handleSubmit.bind(this);
     this._executeCommand = this._executeCommand.bind(this);
   }
 
-  change(changedProps) {
-    for (const prop of changedProps) {
-      // console.log(prop);
+  updated(changedProps) {
+    for (const [prop] of changedProps) {
+      if (prop === 'options') {
+        this.fuse = new Fuse(this.options);
+      }
     }
-    super.change(changedProps);
   }
 
   render() {
@@ -80,7 +81,7 @@ export class CommandBar extends LitElement {
     this.search = event.target.value;
     console.log(this.search);
     console.log(this.fuse.search(this.search));
-    const results = this.fuse.search(this.search);
+    // const results = this.fuse.search(this.search);
     // this.currentResults = results;
   }
 
