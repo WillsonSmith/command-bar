@@ -32,19 +32,21 @@ export class CommandBar extends LitElement {
     };
   }
 
-  propHandlers = {
-    options() {
-      this.fuse?.setCollection(this.options);
-    },
-    search() {
-      console.log(this.search);
-    },
-  };
+  get propHandlers() {
+    return {
+      options() {
+        this.fuse?.setCollection(this.options);
+      },
+      search() {
+        console.log(this.search, this.fuse.search(this.search));
+      },
+    };
+  }
 
   constructor() {
     super();
     this.options = [...DEFAULT_OPTIONS];
-    // this.fuse = new Fuse(this.options, { includeMatches: true });
+    this.fuse = new Fuse(this.options);
   }
 
   updated(changedProps) {
@@ -95,5 +97,3 @@ export class CommandBar extends LitElement {
 
   saveItem({ name, data }) {}
 }
-
-function run() {}
