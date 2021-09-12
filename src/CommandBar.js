@@ -49,7 +49,7 @@ export class CommandBar extends LitElement {
             item: { url, params },
           } = result;
           const [, ...args] = this.search.split(' ');
-          const urlObject = new URL(`${url}`);
+          const urlObject = constructedUrl(url, params, args);
           params.forEach((param, index) => {
             if (args[index]) urlObject.searchParams.set(param, args[index]);
           });
@@ -113,4 +113,12 @@ export class CommandBar extends LitElement {
   }
 
   saveItem({ name, data }) {}
+}
+
+function constructedUrl(url, params, args) {
+  const urlObject = new URL(`${url}`);
+  params.forEach((param, index) => {
+    if (args[index]) urlObject.searchParams.set(param, args[index]);
+  });
+  return urlObject;
 }
