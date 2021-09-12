@@ -49,9 +49,6 @@ export class CommandBar extends LitElement {
         border: none;
         border-bottom: 2px solid rgba(85, 155, 110, 1);
         box-shadow: inset 1rem 0 -1rem 0 var(--command-bar-search-border, #000);
-
-        // border-radius: 1.6rem 1.6rem 0 0;
-
         font-size: 2rem;
         width: 100%;
 
@@ -68,12 +65,13 @@ export class CommandBar extends LitElement {
         background: rgba(255, 255, 255, 1);
       }
 
-      .Results {
+      .Result:first-child {
+        margin-top: 1rem;
       }
-      .Result {
-        display: flex;
-        align-items: center;
 
+      .Result {
+        border: 1px solid transparent;
+        display: block;
         padding: 1.2rem;
 
         font-size: 1.6rem;
@@ -83,12 +81,12 @@ export class CommandBar extends LitElement {
         color: rgba(0, 0, 0, 1);
       }
 
-      .Result + .Result {
-        margin-top: 1rem;
+      .Result[data-focused='true'] {
+        border: 1px solid red;
       }
 
       .Result__action {
-        // background: rgba(114, 114, 230, 1);
+        display: inline-block;
         background: rgba(85, 185, 120, 1);
         padding: 0.4rem 1.6rem;
         border-radius: 6px;
@@ -99,6 +97,9 @@ export class CommandBar extends LitElement {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        margin-left: 0;
+        margin-top: 0.6rem;
       }
     `;
   }
@@ -108,12 +109,14 @@ export class CommandBar extends LitElement {
       search: { type: String },
       options: { type: Array },
       results: { type: Array },
-      // previousSearches: { type: Array },
+      width: { type: Number },
+      selected: { type: Number }, // index of selected result
     };
   }
 
   constructor() {
     super();
+    this.selected = 0;
     this.options = [...DEFAULT_OPTIONS];
     this.fuse = new Fuse(this.options, {
       keys: ['name'],
@@ -121,14 +124,29 @@ export class CommandBar extends LitElement {
       includeScore: true,
     });
 
+    // const resizeObserver = new ResizeObserver(entries => {
+    //   for (const entry of entries) {
+    //     const { width } = entry.contentRect;
+    //     console.log(width);
+    //     this.width = width;
+    //     // this.style.width = `${width}px`;
+    //   }
+    // });
+
+    // resizeObserver.observe(this);
+
     this.addEventListener('keydown', event => {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        console.log(this.shadowRoot.querySelector('a'));
-        //focus next
-        // if last item just don't
+        if (this.selected < this.results.length - 1) {
+          this.selected += 1;
+        }
       }
       if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (this.selected > 0) {
+          this.selected -= 1;
+        }
         // if first item, go to search
       }
     });
@@ -150,11 +168,12 @@ export class CommandBar extends LitElement {
             placeholder="Search actions..."
             @input=${this._updateSearch}
           />
-          <div class="Results">
+          <div class="Results ${this.width < 600 ? 'narrow' : ''}">
             <dl class="DescriptionList">
               ${this.results?.map(
-                result => html`<a
+                (result, index) => html`<a
                   href="${result.url.toString()}"
+                  data-focused=${index === this.selected}
                   class="Result"
                   aria-label="${result.label}"
                 >
@@ -216,7 +235,7 @@ export class CommandBar extends LitElement {
 
   _executeCommand() {
     // this should also execute custom, can open window OR..
-    const url = this.results[0]?.url;
+    const url = this.results[this.selected]?.url;
     if (url) window.open(url);
   }
 }
