@@ -120,6 +120,18 @@ export class CommandBar extends LitElement {
       includeMatches: true,
       includeScore: true,
     });
+
+    this.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        console.log(this.shadowRoot.querySelector('a'));
+        //focus next
+        // if last item just don't
+      }
+      if (event.key === 'ArrowUp') {
+        // if first item, go to search
+      }
+    });
   }
 
   updated(changedProps) {
