@@ -116,7 +116,7 @@ export class CommandBar extends LitElement {
 
   constructor() {
     super();
-    this.selected = 0;
+    this.selected = null;
     this.options = [...DEFAULT_OPTIONS];
     this.fuse = new Fuse(this.options, {
       keys: ['name'],
@@ -135,19 +135,21 @@ export class CommandBar extends LitElement {
 
     // resizeObserver.observe(this);
 
+    // need to removeEventListener on unmount
     this.addEventListener('keydown', event => {
       if (event.key === 'ArrowDown') {
+        if (this.selected === null) this.selected = 0;
         event.preventDefault();
         if (this.selected < this.results.length - 1) {
           this.selected += 1;
         }
       }
       if (event.key === 'ArrowUp') {
+        if (this.selected === null) this.selected = this.results.length;
         event.preventDefault();
         if (this.selected > 0) {
           this.selected -= 1;
         }
-        // if first item, go to search
       }
     });
   }
