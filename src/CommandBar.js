@@ -28,6 +28,7 @@ export class CommandBar extends LitElement {
     return {
       search: { type: String },
       options: { type: Array },
+      results: { type: Array },
       // previousSearches: { type: Array },
     };
   }
@@ -38,7 +39,7 @@ export class CommandBar extends LitElement {
         this.fuse?.setCollection(this.options);
       },
       search() {
-        console.log(this.search, this.fuse.search(this.search));
+        this.results = this.fuse.search(this.search).map(result => result.item);
       },
     };
   }
@@ -46,7 +47,7 @@ export class CommandBar extends LitElement {
   constructor() {
     super();
     this.options = [...DEFAULT_OPTIONS];
-    this.fuse = new Fuse(this.options);
+    this.fuse = new Fuse(this.options, { keys: ['name', 'url'] });
   }
 
   updated(changedProps) {
@@ -67,7 +68,8 @@ export class CommandBar extends LitElement {
       </form>
       <div>${this.search}</div>
       <ul>
-        ${this.currentResults?.map(result => {
+        ${this.results?.map(result => {
+          console.log(result);
           return html`<li>${result.name}</li>`;
         })}
       </ul>
