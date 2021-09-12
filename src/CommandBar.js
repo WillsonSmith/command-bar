@@ -19,12 +19,44 @@ export class CommandBar extends LitElement {
   static get styles() {
     return css`
       :host {
+        --theme-default-face: rgba(255, 255, 255, 1);
+        --theme-default-border: rgba(34, 34, 34, 1);
+
         display: block;
         color: var(--command-bar-text-color, #000);
       }
       .Form {
       }
+      .Search {
+        background: var(
+          --command-bar-search-background,
+          var(--theme-default-face)
+        );
+        border: 2px solid
+          var(--command-bar-border-color, var(--theme-default-border));
+
+        border-radius: 3px;
+
+        font-size: 2rem;
+        width: 100%;
+      }
       .SubmitButton {
+      }
+
+      .Result {
+        display: flex;
+
+        font-size: 1.6rem;
+        font-family: sans-serif;
+      }
+      .Result dt {
+        // flex: 1;
+      }
+      .Result__url {
+        flex: 1 1 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     `;
   }
@@ -44,18 +76,24 @@ export class CommandBar extends LitElement {
         this.fuse?.setCollection(this.options);
       },
       search() {
-        this.results = this.fuse.search(this.search).map(result => {
+        let results = [];
+        const [command, ...queries] = this.search.split(' ');
+        // need to do OR for queries
+        for (const result of this.fuse.search(command)) {
           const {
             item: { url, params },
           } = result;
-          const [, ...args] = this.search.split(' ');
-          const urlObject = constructedUrl(url, params, args);
+          const urlObject = constructedUrl(url, params, queries);
+
           params.forEach((param, index) => {
-            if (args[index]) urlObject.searchParams.set(param, args[index]);
+            if (queries[index]) {
+              urlObject.searchParams.set(param, queries[index]);
+            }
           });
 
-          return { ...result.item, url: urlObject };
-        });
+          results.push({ ...result.item, url: urlObject });
+        }
+        this.results = results;
       },
     };
   }
@@ -63,7 +101,11 @@ export class CommandBar extends LitElement {
   constructor() {
     super();
     this.options = [...DEFAULT_OPTIONS];
-    this.fuse = new Fuse(this.options, { keys: ['name'] });
+    this.fuse = new Fuse(this.options, {
+      keys: ['name'],
+      includeMatches: true,
+      includeScore: true,
+    });
   }
 
   updated(changedProps) {
@@ -80,14 +122,24 @@ export class CommandBar extends LitElement {
           class="Search"
           @input=${this._updateSearch}
         />
-        <button type="submit" class="SubmitButton">Run</button>
+        <button
+          style="opacity: 0; position: absolute; pointer-events: none;"
+          type="submit"
+          class="SubmitButton"
+        >
+          Run
+        </button>
       </form>
-      <div>${this.search}</div>
-      <ul>
-        ${this.results?.map(result => {
-          return html`<li><a href="${result.url}">${result.name}</a></li>`;
-        })}
-      </ul>
+      <div class="Results">
+        <dl class="DescriptionList">
+          ${this.results?.map(result => {
+            return html`<a href="${result.url}" class="Result">
+              <dt>${result.name}</dt>
+              <dd class="Result__url">${result.url}</dd>
+            </a> `;
+          })}
+        </dl>
+      </div>
       <!-- </div> -->
     `;
   }
@@ -103,14 +155,13 @@ export class CommandBar extends LitElement {
   }
 
   _executeCommand() {
-    // const selectedItem = this.options[this.selected];
-    // get highlighted item deets
-    // get params
-    // go
-    // assemble params
-    // window.location.replace(this.options[this.selected]);
-    // this.search('');
+    // this should also execute custom, can open window OR..
+    window.open(this.results[0].url);
+    console.log(this.results[0].url);
+    // this.onExecute();
   }
+
+  onExecute() {}
 
   saveItem({ name, data }) {}
 }
