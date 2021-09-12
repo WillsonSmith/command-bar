@@ -243,7 +243,10 @@ export class CommandBar extends LitElement {
 
   _executeCommand() {
     // this should also execute custom, can open window OR..
-    const url = this.results[this.selected]?.url;
-    if (url) window.open(url);
+    if (!this.selected) {
+      window.open(this.results[0]?.url);
+      return;
+    }
+    window.open(this.results[this.selected]?.url);
   }
 }
