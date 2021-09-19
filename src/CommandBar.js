@@ -14,9 +14,15 @@ const DEFAULT_OPTIONS = [
 
 function constructedUrl(url, params, queries) {
   const urlObject = new URL(`${url}`);
-  params.forEach((param, index) => {
-    if (queries[index]) urlObject.searchParams.set(param, queries[index]);
-  });
+  // case where only one, want to join all queries instead of just one
+  if (params.length === 1) {
+    urlObject.searchParams.set(params[0], queries);
+  }
+  if (params.length > 1) {
+    params.forEach((param, index) => {
+      if (queries[index]) urlObject.searchParams.set(param, queries[index]);
+    });
+  }
   return urlObject;
 }
 
