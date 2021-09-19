@@ -155,8 +155,11 @@ export class CommandBar extends LitElement {
             <dl class="DescriptionList">
               ${this.results?.map(
                 (result, index) => html`<a
-                  href="${ifDefined(result?.url?.toString())}"
-                  @click=${() => ifDefined(result.action(result.queries))}
+                  href="${result?.url?.toString()}"
+                  @click=${event => {
+                    event.preventDefault();
+                    ifDefined(result.action(result.queries));
+                  }}
                   data-focused=${index === this.selected}
                   class="Result"
                   aria-label="${result.label}"
