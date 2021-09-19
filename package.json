@@ -25,6 +25,7 @@
     "@custom-elements-manifest/analyzer": "^0.4.17",
     "@open-wc/eslint-config": "^4.3.0",
     "@open-wc/testing": "next",
+    "@storybook/addons": "^6.3.8",
     "@web/dev-server": "^0.1.22",
     "@web/dev-server-storybook": "next",
     "@web/test-runner": "^0.13.17",

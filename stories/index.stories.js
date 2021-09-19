@@ -11,7 +11,7 @@ export default {
   },
 };
 
-function Template({ title = 'Hello world', counter = 5, textColor, slot }) {
+function Template() {
   return html`
     <command-bar
       .options=${[
@@ -36,6 +36,7 @@ function Template({ title = 'Hello world', counter = 5, textColor, slot }) {
         {
           name: 'Log',
           action: args => console.log('Logging', args),
+          label: 'Run Log with {query}',
         },
       ]}
     >

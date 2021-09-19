@@ -1,4 +1,5 @@
 import { html, css, LitElement } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import {} from 'idb';
 import Fuse from 'fuse.js'; // this is probably overweight tbh, could just filter by name
 
@@ -32,6 +33,7 @@ export class CommandBar extends LitElement {
 
       .Form {
         background: rgba(85, 185, 120, 1);
+        backdrop-filter: blur(5px);
         padding: 1rem;
         border-radius: 1.6rem;
       }
@@ -153,7 +155,8 @@ export class CommandBar extends LitElement {
             <dl class="DescriptionList">
               ${this.results?.map(
                 (result, index) => html`<a
-                  href="${result.url.toString()}"
+                  href="${ifDefined(result?.url?.toString())}"
+                  @click=${() => ifDefined(result.action(result.queries))}
                   data-focused=${index === this.selected}
                   class="Result"
                   aria-label="${result.label}"
@@ -201,13 +204,14 @@ export class CommandBar extends LitElement {
     // need to do OR for queries
     for (const result of this.fuse.search(command)) {
       const {
-        item: { url, params },
+        item: { action, url, params },
       } = result;
+      // if ()
 
-      const urlObject = constructedUrl(url, params, queries);
+      const urlObject = url && constructedUrl(url, params, queries);
 
       const label = result.item.label?.replace('{query}', queries.join(' '));
-      results.push({ ...result.item, url: urlObject, label });
+      results.push({ ...result.item, action, url: urlObject, label, queries });
     }
     this.results = results;
   }
@@ -226,10 +230,10 @@ export class CommandBar extends LitElement {
     this._executeCommand();
   }
 
-  _executeCommand() {
+  _executeCommand(args) {
     // this should also execute custom, can open window OR..
     const selected = this.results[this.selected];
-    if (selected.action) selected.action(['args']);
-    if (selected.url) window.open(selected.url);
+    if (selected.action) return selected.action(args);
+    if (selected.url) return window.open(selected.url);
   }
 }
