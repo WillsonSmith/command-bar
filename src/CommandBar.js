@@ -125,43 +125,17 @@ export class CommandBar extends LitElement {
       includeScore: true,
     });
 
-    // const resizeObserver = new ResizeObserver(entries => {
-    //   for (const entry of entries) {
-    //     const { width } = entry.contentRect;
-    //     console.log(width);
-    //     this.width = width;
-    //     // this.style.width = `${width}px`;
-    //   }
-    // });
-
-    // resizeObserver.observe(this);
-
     // need to removeEventListener on unmount
-    this.addEventListener('keydown', event => {
-      if (event.key === ' ') {
-        // don't do this if the search bar is focused
-        // event.preventDefault();
-        // this._executeCommand();
-      }
-      if (event.key === 'ArrowDown') {
-        if (this.selected === null) this.selected = -1;
-        event.preventDefault();
-        if (this.selected < this.results.length - 1) {
-          this.selected += 1;
-        }
-      }
-      if (event.key === 'ArrowUp') {
-        if (this.selected === null) this.selected = this.results.length;
-        event.preventDefault();
-        if (this.selected > 0) {
-          this.selected -= 1;
-        }
-      }
-    });
+    this.addEventListener('keydown', this._handleKeyDown);
   }
 
   updated(changedProps) {
     for (const [prop] of changedProps) this[`_${prop}Changed`]?.bind(this)();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('keydown', this._handleKeyDown);
   }
 
   render() {
@@ -204,6 +178,23 @@ export class CommandBar extends LitElement {
     `;
   }
 
+  _handleKeyDown(event) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (this.selected === null) this.selected = -1;
+      if (this.selected < this.results.length - 1) {
+        this.selected += 1;
+      }
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (this.selected === null) this.selected = this.results.length;
+      if (this.selected > 0) {
+        this.selected -= 1;
+      }
+    }
+  }
+
   _searchChanged() {
     const results = [];
     const [command, ...queries] = this.search.split(' ');
@@ -212,16 +203,10 @@ export class CommandBar extends LitElement {
       const {
         item: { url, params },
       } = result;
+
       const urlObject = constructedUrl(url, params, queries);
 
-      // get queries length, get params length, if queries > params, concat
-      params.forEach((param, index) => {
-        if (queries[index]) {
-          // urlObject.searchParams.set(param, queries[index]);
-        }
-      });
-
-      const label = result.item.label.replace('{query}', queries.join(' '));
+      const label = result.item.label?.replace('{query}', queries.join(' '));
       results.push({ ...result.item, url: urlObject, label });
     }
     this.results = results;
@@ -243,10 +228,8 @@ export class CommandBar extends LitElement {
 
   _executeCommand() {
     // this should also execute custom, can open window OR..
-    if (!this.selected) {
-      window.open(this.results[0]?.url);
-      return;
-    }
-    window.open(this.results[this.selected]?.url);
+    const selected = this.results[this.selected];
+    if (selected.action) selected.action(['args']);
+    if (selected.url) window.open(selected.url);
   }
 }

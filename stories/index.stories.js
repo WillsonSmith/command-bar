@@ -33,6 +33,10 @@ function Template({ title = 'Hello world', counter = 5, textColor, slot }) {
           params: ['url'],
           label: 'Download video from {query}',
         },
+        {
+          name: 'Log',
+          action: args => console.log('Logging', args),
+        },
       ]}
     >
       some light-dom
