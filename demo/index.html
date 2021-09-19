@@ -16,30 +16,30 @@
     import { html, render } from 'lit';
     import '../command-bar.js';
 
-    const title = 'Hello owc World!';
+    const options = [
+        {
+          name: 'DuckDuckGo',
+          url: 'https://duckduckgo.com',
+          params: ['q'],
+          label: 'Search DuckDuckGo for {query}',
+        },
+        {
+          name: 'Google',
+          url: 'https://google.com/search',
+          params: ['q'], // use to validate? "Missing Param Q"
+          label: 'Google search for {query}',
+        },
+        {
+          name: 'Download Video',
+          url: 'https://materialistic-brook-king.glitch.me/dl',
+          params: ['url'],
+          label: 'Download video from {query}',
+        },
+      ];
     render(
       html`
         <command-bar
-          .options=${[
-            {
-              name: 'DuckDuckGo',
-              url: 'https://duckduckgo.com',
-              params: ['q'],
-              label: 'Search DuckDuckGo',
-            },
-            {
-              name: 'Google',
-              url: 'https://google.com/search',
-              params: ['q'], // use to validate? "Missing Param Q"
-              label: 'Google search for {query}',
-            },
-            {
-              name: 'Download Video',
-              url: 'https://materialistic-brook-king.glitch.me/dl',
-              params: ['url'],
-              label: 'Download video from {query}',
-            },
-          ]}>
+          .options=${options}>
           some light-dom
         </command-bar>
       `,

@@ -3,6 +3,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {} from 'idb';
 import Fuse from 'fuse.js'; // this is probably overweight tbh, could just filter by name
 
+/**
+ * params: [{name: 'q', autoFill: () => window.location}]
+ * if (typeof param === 'object') query = param.autoFill();
+ */
+
 const DEFAULT_OPTIONS = [
   {
     name: 'Google',
@@ -16,7 +21,7 @@ function constructedUrl(url, params, queries) {
   const urlObject = new URL(`${url}`);
   // case where only one, want to join all queries instead of just one
   if (params.length === 1) {
-    urlObject.searchParams.set(params[0], queries);
+    urlObject.searchParams.set(params[0], queries.join(' '));
   }
   if (params.length > 1) {
     params.forEach((param, index) => {
@@ -38,7 +43,7 @@ export class CommandBar extends LitElement {
       }
 
       .Form {
-        background: rgba(85, 185, 120, 1);
+        background: rgba(155, 155, 155, 0.2);
         backdrop-filter: blur(5px);
         padding: 1rem;
         border-radius: 1.6rem;
@@ -116,10 +121,10 @@ export class CommandBar extends LitElement {
   static get properties() {
     return {
       search: { type: String },
-      options: { type: Array },
-      results: { type: Array },
-      width: { type: Number },
       selected: { type: Number }, // index of selected result
+      options: { attribute: false, type: Array },
+      results: { attribute: false, type: Array },
+      width: { attribute: false, type: Number },
     };
   }
 
