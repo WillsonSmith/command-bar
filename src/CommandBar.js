@@ -21,7 +21,16 @@ function constructedUrl(url, params, queries) {
   const urlObject = new URL(`${url}`);
   // case where only one, want to join all queries instead of just one
   if (params.length === 1) {
-    urlObject.searchParams.set(params[0], queries.join(' '));
+    /**
+     * Make autofill less gross to read
+     */
+    const param = params[0];
+    if (param.autoFill) {
+      const query = param.autoFill();
+      urlObject.searchParams.set(param.name, query);
+    } else {
+      urlObject.searchParams.set(params[0], queries.join(' '));
+    }
   }
   if (params.length > 1) {
     params.forEach((param, index) => {
