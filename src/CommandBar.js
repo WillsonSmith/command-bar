@@ -144,7 +144,6 @@ export class CommandBar extends LitElement {
       includeMatches: true,
       includeScore: true,
     });
-
     // need to removeEventListener on unmount
     this.addEventListener('keydown', this._handleKeyDown);
   }
@@ -170,7 +169,6 @@ export class CommandBar extends LitElement {
             class="Search"
             placeholder="Search actions..."
             @input=${this._updateSearch}
-            ?autofocus=${this.autofocus}
           />
           <div class="Results ${this.width < 600 ? 'narrow' : ''}">
             <dl class="DescriptionList">
@@ -240,6 +238,12 @@ export class CommandBar extends LitElement {
       results.push({ ...result.item, action, url: urlObject, label, queries });
     }
     this.results = results;
+  }
+
+  _autofocusChanged() {
+    if (!this.autofocus) return;
+    const input = this.shadowRoot.querySelector('.Search');
+    input.focus();
   }
 
   _optionsChanged() {
