@@ -207,6 +207,7 @@ export class CommandBar extends LitElement {
   }
 
   _handleKeyDown(event) {
+    event.stopPropagation();
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (this.selected === null) this.selected = -1;
