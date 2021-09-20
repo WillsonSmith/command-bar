@@ -35,11 +35,12 @@
           params: ['url'],
           label: 'Download video from {query}',
         },
-        { name: 'Google 2', url: 'https://google.com/search', params: [{name: 'q', autoFill: () => window.location.href}], label: 'Google search for {query}' },
+        { name: 'Google autofill', url: 'https://google.com/search', params: [{name: 'q', autoFill: () => window.location.href}], label: 'Google search for {query}' },
       ];
     render(
       html`
         <command-bar
+          autofocus
           .options=${options}>
           some light-dom
         </command-bar>

@@ -3,11 +3,6 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {} from 'idb';
 import Fuse from 'fuse.js'; // this is probably overweight tbh, could just filter by name
 
-/**
- * params: [{name: 'q', autoFill: () => window.location}]
- * if (typeof param === 'object') query = param.autoFill();
- */
-
 const DEFAULT_OPTIONS = [
   {
     name: 'Google',
@@ -23,6 +18,8 @@ function constructedUrl(url, params, queries) {
   if (params.length === 1) {
     /**
      * Make autofill less gross to read
+     * Only supports autoFill for one param rn
+     * Should maybe have autoFill on option instead of param, so that it can be used for multiple params
      */
     const param = params[0];
     if (param.autoFill) {
@@ -129,6 +126,7 @@ export class CommandBar extends LitElement {
 
   static get properties() {
     return {
+      autofocus: { type: Boolean },
       search: { type: String },
       selected: { type: Number }, // index of selected result
       options: { attribute: false, type: Array },
@@ -152,7 +150,9 @@ export class CommandBar extends LitElement {
   }
 
   updated(changedProps) {
-    for (const [prop] of changedProps) this[`_${prop}Changed`]?.bind(this)();
+    for (const [prop] of changedProps) {
+      this[`_${prop}Changed`]?.bind(this)();
+    }
   }
 
   disconnectedCallback() {
@@ -170,6 +170,7 @@ export class CommandBar extends LitElement {
             class="Search"
             placeholder="Search actions..."
             @input=${this._updateSearch}
+            ?autofocus=${this.autofocus}
           />
           <div class="Results ${this.width < 600 ? 'narrow' : ''}">
             <dl class="DescriptionList">
@@ -183,7 +184,9 @@ export class CommandBar extends LitElement {
                   data-focused=${index === this.selected}
                   class="Result"
                   aria-label="${result.label}"
-                  @focus=${() => (this.selected = index)}
+                  @focus=${() => {
+                    this.selected = index;
+                  }}
                 >
                   <dt class="Result__action">${result.name}</dt>
                   <dd class="Result__url">${result.url}</dd>
