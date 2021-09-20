@@ -176,8 +176,9 @@ export class CommandBar extends LitElement {
                 (result, index) => html`<a
                   href="${result?.url?.toString()}"
                   @click=${event => {
-                    event.preventDefault();
-                    ifDefined(result.action(result.queries));
+                    const url = result?.url?.toString();
+                    if (!url) event.preventDefault();
+                    ifDefined(result.action?.(result.queries));
                   }}
                   data-focused=${index === this.selected}
                   class="Result"
